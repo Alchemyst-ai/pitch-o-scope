@@ -10,7 +10,7 @@ export interface Lead {
   lastName?: string;
   jobTitle: string;
   companyName: string;
-  website: string;
+  website?: string;
   industry?: string;
   keywords?: string[];
   location?: string;
@@ -18,10 +18,16 @@ export interface Lead {
 
 export interface PitchOutput {
   id: string;
-  lead: Lead;
-  pitchAngle: string;
-  personalizedMessage: string;
-  outputType: OutputType;
+  fullName: string;
+  jobTitle: string;
+  companyName: string;
+  groupName: string;
+  pitch: string;
+  // Keep these for backward compatibility
+  lead?: Lead;
+  pitchAngle?: string;
+  personalizedMessage?: string;
+  outputType?: OutputType;
 }
 
 export interface CSVRow {

@@ -69,19 +69,13 @@ export const Dashboard: React.FC = () => {
         <div className="space-y-6">
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
             <div className="bg-indigo-500 py-3 px-4">
-              <h3 className="text-white font-semibold">5. Generated Pitches</h3>
+              <h3 className="text-white font-semibold">5. Results</h3>
             </div>
             <div className="p-4">
               <OutputTable />
-            </div>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow-md overflow-hidden">
-            <div className="bg-indigo-500 py-3 px-4">
-              <h3 className="text-white font-semibold">6. Export</h3>
-            </div>
-            <div className="p-4">
-              <ExportOptions />
+              <div className="mt-6">
+                <ExportOptions />
+              </div>
             </div>
           </div>
         </div>
