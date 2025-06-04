@@ -55,6 +55,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setCsvFile(file);
     try {
       const parsedData = await parseCSV(file);
+      console.log(parsedData[0]);
       const { isValid, error, data } = validateCSV(parsedData);
       
       setIsValidCSV(isValid);

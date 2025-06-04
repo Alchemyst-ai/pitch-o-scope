@@ -10,8 +10,13 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@langchain/core": "^0.3.57",
+    "@langchain/openai": "^0.5.11",
+    "csv-parse": "^5.6.0",
     "lucide-react": "^0.344.0",
     "next": "latest",
+    "papaparse": "^5.5.3",
+    "partial-json": "^0.1.7",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "uuid": "^9.0.1"
@@ -19,6 +24,7 @@
   "devDependencies": {
     "@eslint/js": "^9.9.1",
     "@types/node": "22.15.29",
+    "@types/papaparse": "^5.3.16",
     "@types/react": "^18.3.5",
     "@types/react-dom": "^18.3.0",
     "@types/uuid": "^9.0.8",
