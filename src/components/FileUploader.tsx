@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { useAppContext } from '../contexts/AppContext';
+import { useAppContext } from '../../app/contexts/AppContext';
 import { Upload, FileWarning, CheckCircle, AlertTriangle, Download } from 'lucide-react';
 import { getTemplateCSV } from '../utils/csvUtils';
 

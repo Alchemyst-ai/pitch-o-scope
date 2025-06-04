@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useAppContext } from '../contexts/AppContext';
+import { useAppContext } from '../../app/contexts/AppContext';
 import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
 
 export const LeadTable: React.FC = () => {

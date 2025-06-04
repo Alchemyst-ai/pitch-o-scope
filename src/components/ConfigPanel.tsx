@@ -1,5 +1,5 @@
 import React from 'react';
-import { useAppContext } from '../contexts/AppContext';
+import { useAppContext } from '../../app/contexts/AppContext';
 import { ChevronDown, ChevronUp, Settings } from 'lucide-react';
 import { OutputType } from '../types';
 

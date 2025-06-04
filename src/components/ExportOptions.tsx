@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useAppContext } from '../contexts/AppContext';
+import { useAppContext } from '../../app/contexts/AppContext';
 import { FileDown, ClipboardCopy, CheckCircle } from 'lucide-react';
 import { outputsToCSV } from '../utils/pitchUtils';
 

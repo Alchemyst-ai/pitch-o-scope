@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useAppContext } from '../contexts/AppContext';
+import { useAppContext } from '../../app/contexts/AppContext';
 import { ChevronDown, ChevronUp, Edit, Save, X, Copy, CheckCircle } from 'lucide-react';
 
 export const OutputTable: React.FC = () => {

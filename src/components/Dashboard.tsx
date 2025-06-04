@@ -1,5 +1,5 @@
 import React from 'react';
-import { useAppContext } from '../contexts/AppContext';
+import { useAppContext } from '../../app/contexts/AppContext';
 import { FileUploader } from './FileUploader';
 import { ConfigPanel } from './ConfigPanel';
 import { LeadTable } from './LeadTable';
