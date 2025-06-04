@@ -1,36 +1,39 @@
 import { CSVRow, Lead, ValidationResult } from '../types';
 import { v4 as uuidv4 } from 'uuid';
+import { parse } from 'csv-parse/sync';
+import Papa from 'papaparse';
 
 export const parseCSV = async (file: File): Promise<CSVRow[]> => {
+  // For server-side (API route) context
+  if (typeof window === 'undefined') {
+    const text = await file.text();
+    // Use csv-parse to handle quoted values and commas
+    const records = parse(text, {
+      columns: true,
+      skip_empty_lines: true,
+      trim: true,
+    });
+    return records as CSVRow[];
+  }
+  
+  // For client-side context
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     
     reader.onload = (event) => {
       try {
         const text = event.target?.result as string;
-        const lines = text.split('\n');
-        
-        // Get headers from the first line
-        const headers = lines[0].split(',').map(header => header.trim());
-        
-        const rows: CSVRow[] = [];
-        
-        // Parse each line from 1 (skip headers)
-        for (let i = 1; i < lines.length; i++) {
-          if (!lines[i].trim()) continue; // Skip empty lines
-          
-          const values = lines[i].split(',').map(value => value.trim());
-          
-          // Create row object mapping headers to values
-          const row: CSVRow = {};
-          headers.forEach((header, index) => {
-            row[header] = values[index] || '';
-          });
-          
-          rows.push(row);
+        // Use PapaParse to handle quoted values and commas
+        const result = Papa.parse<CSVRow>(text, {
+          header: true,
+          skipEmptyLines: true,
+          dynamicTyping: false,
+        });
+        if (result.errors && result.errors.length > 0) {
+          reject(new Error('Failed to parse CSV file: ' + result.errors.map((e: Papa.ParseError) => e.message).join('; ')));
+        } else {
+          resolve(result.data);
         }
-        
-        resolve(rows);
       } catch (error) {
         reject(new Error('Failed to parse CSV file'));
       }
@@ -43,6 +46,32 @@ export const parseCSV = async (file: File): Promise<CSVRow[]> => {
     reader.readAsText(file);
   });
 };
+
+export const convertJsonToCSV = (jsonData: any[]): string => {
+  if (!jsonData.length) return '';
+  
+  // Get headers from first object
+  const headers = Object.keys(jsonData[0]);
+  
+  // Create CSV header row
+  const headerRow = headers.join(',');
+  
+  // Create data rows
+  const dataRows = jsonData.map(obj => {
+    return headers.map(header => {
+      const value = obj[header];
+      // Handle values that contain commas by wrapping in quotes
+      if (typeof value === 'string' && value.includes(',')) {
+        return `"${value}"`;
+      }
+      return `"${value}"`;
+    }).join(',');
+  });
+  
+  // Combine header and data rows
+  return [headerRow, ...dataRows].join('\n');
+};
+
 
 export const validateCSV = (rows: CSVRow[]): ValidationResult => {
   // Check if there are any rows
