@@ -4,8 +4,16 @@ import { useAppContext } from '../../app/contexts/AppContext';
 export const ConfigPanel: React.FC = () => {
   const { 
     pitch, 
-    setPitch
+    setPitch,
+    leads,
+    isGroupingEnabled,
+    setIsGroupingEnabled,
+    numberOfGroups,
+    setNumberOfGroups
   } = useAppContext();
+
+  // Calculate max number of groups based on leads
+  const maxGroups = Math.max(10, leads.length);
 
   return (
     <div className="space-y-4">
@@ -24,6 +32,49 @@ export const ConfigPanel: React.FC = () => {
           This information will be used to generate personalized pitches for your leads.
         </p>
       </div>
+
+      <div className="flex items-center justify-between">
+        <label htmlFor="groupingToggle" className="text-sm font-medium text-gray-700">
+          Enable Lead Grouping
+        </label>
+        <button
+          type="button"
+          onClick={() => setIsGroupingEnabled(!isGroupingEnabled)}
+          className={`${
+            isGroupingEnabled ? 'bg-indigo-600' : 'bg-gray-200'
+          } relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2`}
+          role="switch"
+          aria-checked={isGroupingEnabled}
+        >
+          <span className="sr-only">Enable grouping</span>
+          <span
+            aria-hidden="true"
+            className={`${
+              isGroupingEnabled ? 'translate-x-5' : 'translate-x-0'
+            } pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out`}
+          />
+        </button>
+      </div>
+
+      {isGroupingEnabled && (
+        <div>
+          <label htmlFor="numberOfGroups" className="block text-sm font-medium text-gray-700 mb-1">
+            Number of Groups: {numberOfGroups}
+          </label>
+          <input
+            id="numberOfGroups"
+            type="range"
+            min={10}
+            max={maxGroups}
+            value={numberOfGroups}
+            onChange={(e) => setNumberOfGroups(parseInt(e.target.value, 10))}
+            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+          />
+          <p className="mt-1 text-sm text-gray-500">
+            Adjust the number of groups to organize your leads (min: 10, max: {maxGroups})
+          </p>
+        </div>
+      )}
     </div>
   );
 };
