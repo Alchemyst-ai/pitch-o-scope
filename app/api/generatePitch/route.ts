@@ -6,7 +6,13 @@ export async function POST(request: NextRequest) {
   const formData = await request.formData();
   const csvFile = formData.get('file') as File;
   const companyContext = formData.get('companyContext') as string;
-  const csvData = await parseCSV(csvFile);
+  const maxGroups = Number(formData.get('maxGroups')) || 3;
+  const predefinedGroupsStr = formData.get('predefinedGroups') as string;
+  const predefinedGroups = predefinedGroupsStr?.trim() 
+    ? predefinedGroupsStr.split(',').map(g => g.trim()).filter(Boolean)
+    : undefined;
+  
+  const csvData = (await parseCSV(csvFile)).slice(0, 10);
   type ProcessedLead = typeof csvData[0] & {
     id: string;
     groupName: string;
@@ -16,6 +22,8 @@ export async function POST(request: NextRequest) {
   const pipelineResult = await processLeadsPipeline({
     leads: csvData,
     companyContext,
+    maxGroups,
+    predefinedGroups,
   }) as ProcessedLead[];
   
   // Generate CSV for download
