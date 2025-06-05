@@ -37,7 +37,7 @@ export async function processLeadsPipeline({
 }): Promise<Lead[]> {
   const leadsWithIds = ensureUniqueIds(leads);
 
-  const batches = batchArray(leadsWithIds, 50);
+  const batches = batchArray(leadsWithIds, 100);
 
   let groups: Group[] = [];
   const leadToGroup: Record<string, string> = {};
