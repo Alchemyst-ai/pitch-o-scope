@@ -16,6 +16,36 @@ export interface Lead {
   location?: string;
 }
 
+export interface LeadData {
+  id: string;
+  "Linkedin Url"?: string;
+  "Full Name": string;
+  "First Name"?: string;
+  "Last Name"?: string;
+  "Email"?: string;
+  "Email Status"?: string;
+  "Job Title": string;
+  "Company Name": string;
+  "Company Website"?: string;
+  "City"?: string;
+  "State"?: string;
+  "Country"?: string;
+  "Industry"?: string;
+  "Keywords"?: string;
+  "Employees"?: string;
+  "Company City"?: string;
+  "Company State"?: string;
+  "Company Country"?: string;
+  "Company Linkedin Url"?: string;
+  "Company Twitter Url"?: string;
+  "Company Facebook Url"?: string;
+  "Company Phone Numbers"?: string;
+  "Twitter Url"?: string;
+  "Facebook Url"?: string;
+  groupName?: string;
+  pitch?: string;
+}
+
 export interface PitchOutput {
   id: string;
   fullName: string;
@@ -28,6 +58,10 @@ export interface PitchOutput {
   pitchAngle?: string;
   personalizedMessage?: string;
   outputType?: OutputType;
+  // New format with data field
+  type?: string;
+  data?: LeadData;
+  timestamp?: string;
 }
 
 export interface CSVRow {

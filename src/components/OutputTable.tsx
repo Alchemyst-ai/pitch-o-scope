@@ -6,7 +6,7 @@ export const OutputTable: React.FC = () => {
   
   // Group outputs by groupName
   const groupedOutputs = outputs.reduce((groups: Record<string, typeof outputs>, output) => {
-    const groupName = output.groupName || 'Ungrouped';
+    const groupName = output.groupName || output.data?.groupName || 'Ungrouped';
     if (!groups[groupName]) {
       groups[groupName] = [];
     }
@@ -17,7 +17,7 @@ export const OutputTable: React.FC = () => {
   // Extract groups with descriptions
   const groups = Object.entries(groupedOutputs).map(([name, leads]) => {
     // Get the description from the first lead's pitch (first line)
-    const description = leads[0]?.pitch?.split('\n')[0] || '';
+    const description = leads[0]?.pitch?.split('\n')[0] || leads[0]?.data?.pitch?.split('\n')[0] || '';
     return { name, description, leads };
   });
 
@@ -56,27 +56,6 @@ export const OutputTable: React.FC = () => {
                     </div>
                   </details>
                 )}
-
-                {/* Show leads list */}
-                <div className="space-y-2">
-                  <h4 className="font-medium text-sm text-gray-700 mb-2">Leads in this group:</h4>
-                  {group.leads.map(lead => (
-                    <div key={lead.id} className="p-3 bg-gray-50 rounded-md">
-                      <div className="mb-1">
-                        <span className="font-medium text-gray-700">full name: </span>
-                        <span className="text-gray-600">{lead.fullName}</span>
-                      </div>
-                      <div className="mb-1">
-                        <span className="font-medium text-gray-700">job title: </span>
-                        <span className="text-gray-600">{lead.jobTitle}</span>
-                      </div>
-                      <div className="mb-1">
-                        <span className="font-medium text-gray-700">company name: </span>
-                        <span className="text-gray-600">{lead.companyName}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
               </div>
             ))}
           </div>
