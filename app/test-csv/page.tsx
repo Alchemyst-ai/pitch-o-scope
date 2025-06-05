@@ -2,12 +2,40 @@
 
 import { useState } from 'react';
 
+interface ProcessedLead {
+  id: string;
+  fullName: string;
+  jobTitle: string;
+  companyName: string;
+  groupName: string;
+  pitch: string;
+}
+
+interface Group {
+  name: string;
+  description: string;
+}
+
+interface ProgressState {
+  phase: 'idle' | 'starting' | 'classifying' | 'balancing' | 'generating_pitch' | 'complete';
+  message: string;
+  detail?: string;
+  batch?: number;
+  totalBatches?: number;
+  currentGroup?: string;
+  groupProgress?: number;
+  totalGroups?: number;
+}
+
 export default function TestCSVPage() {
-  const [csvContent, setCsvContent] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [maxGroups, setMaxGroups] = useState<number>(10);
+  const [maxGroups, setMaxGroups] = useState<number>(3);
   const [predefinedGroups, setPredefinedGroups] = useState<string>('');
+  const [progress, setProgress] = useState<ProgressState>({ phase: 'idle', message: '' });
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [processedLeads, setProcessedLeads] = useState<ProcessedLead[]>([]);
+  const [csvUrl, setCsvUrl] = useState<string | null>(null);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -15,6 +43,10 @@ export default function TestCSVPage() {
 
     setLoading(true);
     setError(null);
+    setProgress({ phase: 'starting', message: 'Initializing...' });
+    setGroups([]);
+    setProcessedLeads([]);
+    setCsvUrl(null);
 
     try {
       const formData = new FormData();
@@ -42,26 +74,132 @@ export default function TestCSVPage() {
         throw new Error('Failed to upload CSV');
       }
 
-      const data = await response.json();
-      
-      // Create and trigger download of the CSV file
-      const blob = new Blob([data.csv], { type: 'text/csv' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'generated_pitches.csv';
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error('No reader available');
 
-      // Display the results in a more structured way
-      setCsvContent(JSON.stringify(data.results, null, 2));
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = new TextDecoder().decode(value);
+        const updates = chunk.split('\n').filter(Boolean);
+
+        for (const update of updates) {
+          const { type, data } = JSON.parse(update);
+          
+          switch (type) {
+            case 'start':
+              setProgress({
+                phase: 'starting',
+                message: `Processing ${data.totalLeads} leads...`,
+                detail: `Target: ${data.maxGroups} groups`
+              });
+              break;
+
+            case 'progress':
+              switch (data.phase) {
+                case 'classifying':
+                  setProgress({
+                    phase: 'classifying',
+                    message: 'Classifying leads into groups',
+                    detail: `Batch ${data.batch}/${data.totalBatches}`,
+                    batch: data.batch,
+                    totalBatches: data.totalBatches
+                  });
+                  break;
+                case 'balancing':
+                  setProgress({
+                    phase: 'balancing',
+                    message: 'Optimizing group distribution',
+                    detail: `Adjusting from ${data.currentGroups} to ${data.targetGroups} groups`
+                  });
+                  break;
+                case 'generating_pitch':
+                  setProgress({
+                    phase: 'generating_pitch',
+                    message: 'Generating personalized pitches',
+                    detail: `Group: ${data.group}`,
+                    currentGroup: data.group,
+                    groupProgress: data.current,
+                    totalGroups: data.total
+                  });
+                  break;
+              }
+              break;
+
+            case 'group':
+              setGroups(prev => {
+                // Replace if exists, add if new
+                const exists = prev.findIndex(g => g.name === data.name);
+                if (exists >= 0) {
+                  return [...prev.slice(0, exists), data, ...prev.slice(exists + 1)];
+                }
+                return [...prev, data];
+              });
+              break;
+
+            case 'lead':
+              console.log('lead', data); 
+              setProcessedLeads(prev => {
+                // Replace if exists, add if new
+                const exists = prev.findIndex(l => l.id === data.id);
+                if (exists >= 0) {
+                  return [...prev.slice(0, exists), data, ...prev.slice(exists + 1)];
+                }
+                return [...prev, data];
+              });
+              break;
+
+            case 'csv':
+              const blob = new Blob([data.content], { type: 'text/csv' });
+              const url = window.URL.createObjectURL(blob);
+              setCsvUrl(url);
+              break;
+
+            case 'complete':
+              setProgress({
+                phase: 'complete',
+                message: 'Processing complete!',
+                detail: `${data.totalProcessed} leads processed`
+              });
+              break;
+
+            case 'error':
+              setError(data.message);
+              break;
+          }
+        }
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
     }
+  };
+
+  const getProgressBar = () => {
+    let percentage = 0;
+    switch (progress.phase) {
+      case 'classifying':
+        percentage = ((progress.batch || 0) / (progress.totalBatches || 1)) * 100;
+        break;
+      case 'generating_pitch':
+        percentage = ((progress.groupProgress || 0) / (progress.totalGroups || 1)) * 100;
+        break;
+      case 'complete':
+        percentage = 100;
+        break;
+      default:
+        percentage = 0;
+    }
+    return (
+      <div className="w-full bg-gray-200 rounded-full h-2.5 mb-4">
+        <div 
+          className="bg-blue-600 h-2.5 rounded-full transition-all duration-500"
+          style={{ width: `${percentage}%` }}
+        />
+      </div>
+    );
   };
 
   return (
@@ -114,20 +252,92 @@ export default function TestCSVPage() {
         </div>
       </div>
 
-      {loading && (
-        <div className="mt-4 text-gray-600">Processing leads and generating pitches...</div>
+      {(loading || progress.phase !== 'idle') && (
+        <div className="mt-6 p-4 bg-white rounded-lg shadow">
+          <div className="flex items-center space-x-2 mb-2">
+            {loading && <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-500 border-t-transparent" />}
+            <h3 className="font-medium">{progress.message}</h3>
+          </div>
+          {progress.detail && (
+            <p className="text-sm text-gray-600 mb-2">{progress.detail}</p>
+          )}
+          {getProgressBar()}
+        </div>
       )}
 
       {error && (
-        <div className="mt-4 text-red-600 mb-4">{error}</div>
+        <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <div className="flex items-center text-red-600">
+            <svg className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+            </svg>
+            {error}
+          </div>
+        </div>
       )}
 
-      {csvContent && (
+      {groups.length > 0 && (
         <div className="mt-8">
-          <h2 className="text-xl font-semibold mb-4">Generated Results:</h2>
-          <pre className="bg-gray-100 p-4 rounded-lg overflow-auto whitespace-pre-wrap">
-            {csvContent}
-          </pre>
+          <h2 className="text-xl font-semibold mb-4">Generated Groups</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {groups.map((group, i) => (
+              <div key={i} className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-medium text-gray-900">{group.name}</h3>
+                  <span className="text-sm text-gray-500">
+                    {processedLeads.filter(l => l.groupName === group.name).length} leads
+                  </span>
+                </div>
+                <p className="text-gray-600 text-sm mb-4">{group.description}</p>
+                
+                {/* Show pitch once per group */}
+                {processedLeads.find(lead => lead.groupName === group.name)?.pitch && (
+                  <details className="mb-4">
+                    <summary className="text-sm text-blue-600 cursor-pointer hover:text-blue-800 font-medium">
+                      View Group Pitch
+                    </summary>
+                    <div className="mt-2 text-sm text-gray-600 whitespace-pre-wrap bg-gray-50 p-4 rounded-md">
+                      {processedLeads.find(lead => lead.groupName === group.name)?.pitch}
+                    </div>
+                  </details>
+                )}
+
+                {/* Show leads list */}
+                <div className="space-y-2">
+                  <h4 className="font-medium text-sm text-gray-700 mb-2">Leads in this group:</h4>
+                  {processedLeads
+                    .filter(lead => lead.groupName === group.name)
+                    .map(lead => (
+                      <div key={lead.id} className="p-3 bg-gray-50 rounded-md">
+                        {Object.entries(lead)
+                          .filter(([key]) => !['id', 'groupName', 'pitch'].includes(key)) // Exclude these since they're redundant in this context
+                          .map(([key, value]) => (
+                            <div key={key} className="mb-1">
+                              <span className="font-medium text-gray-700">{key.replace(/([A-Z])/g, ' $1').toLowerCase()}: </span>
+                              <span className="text-gray-600">{value}</span>
+                            </div>
+                          ))}
+                      </div>
+                    ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {csvUrl && (
+        <div className="mt-6 flex justify-center">
+          <a
+            href={csvUrl}
+            download="generated_pitches.csv"
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            Download CSV
+          </a>
         </div>
       )}
     </div>

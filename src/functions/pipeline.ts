@@ -7,10 +7,22 @@ interface Lead {
   id?: string;
 }
 
+interface ProcessedLead extends Lead {
+  id: string;
+  groupName: string;
+  pitch: string;
+}
+
 interface Group {
   name: string;
   description: string;
   leadIds: string[];
+}
+
+interface PipelineCallbacks {
+  onProgress?: (update: any) => Promise<void>;
+  onLeadProcessed?: (lead: ProcessedLead) => Promise<void>;
+  onGroupCreated?: (group: { name: string; description: string }) => Promise<void>;
 }
 
 function ensureUniqueIds(leads: Lead[]): Lead[] {
@@ -246,13 +258,16 @@ export async function processLeadsPipeline({
   leads,
   companyContext,
   maxGroups = 10,
-  predefinedGroups
+  predefinedGroups,
+  onProgress,
+  onLeadProcessed,
+  onGroupCreated
 }: {
   leads: Lead[];
   companyContext: string;
   maxGroups?: number;
   predefinedGroups?: string[];
-}): Promise<Lead[]> {
+} & PipelineCallbacks): Promise<Lead[]> {
   console.log(`\n🚀 Starting pipeline processing for ${leads.length} leads...`);
   console.log(`📊 Target number of groups: ${maxGroups}`);
   if (predefinedGroups) {
@@ -270,12 +285,22 @@ export async function processLeadsPipeline({
   if (predefinedGroups?.length) {
     console.log('\n🎯 Generating descriptions for predefined groups...');
     groups = await generateGroupDescriptions(predefinedGroups, companyContext);
+    for (const group of groups) {
+      await onGroupCreated?.({ name: group.name, description: group.description });
+    }
     console.log('✅ Group descriptions generated');
     
     // Process leads in batches
     for (let i = 0; i < batches.length; i++) {
       const batch = batches[i];
       console.log(`\n📝 Processing batch ${i + 1}/${batches.length} (${batch.length} leads)...`);
+      await onProgress?.({
+        phase: 'classifying',
+        batch: i + 1,
+        totalBatches: batches.length,
+        batchSize: batch.length
+      });
+
       const assignments = await classifyLeadsIntoExistingGroups(batch, groups, companyContext);
       
       for (const { leadId, groupName } of assignments) {
@@ -292,6 +317,12 @@ export async function processLeadsPipeline({
     for (let i = 0; i < batches.length; i++) {
       const batch = batches[i];
       console.log(`\n📝 Processing batch ${i + 1}/${batches.length} (${batch.length} leads)...`);
+      await onProgress?.({
+        phase: 'classifying',
+        batch: i + 1,
+        totalBatches: batches.length,
+        batchSize: batch.length
+      });
       
       const prompt = `Analyze these leads and classify them into groups based on our company context.
 
@@ -338,11 +369,13 @@ Return a JSON array of objects with this structure:
         leadToGroup[leadId] = groupName;
         let group = groups.find(g => g.name === groupName);
         if (!group) {
-          groups.push({
+          group = {
             name: groupName,
             description: groupDescription || "",
             leadIds: [leadId],
-          });
+          };
+          groups.push(group);
+          await onGroupCreated?.({ name: group.name, description: group.description });
         } else {
           group.leadIds.push(leadId);
         }
@@ -353,6 +386,12 @@ Return a JSON array of objects with this structure:
       if (groups.length !== maxGroups || 
           Math.max(...groups.map(g => g.leadIds.length)) - Math.min(...groups.map(g => g.leadIds.length)) > 1) {
         console.log(`\n🔄 Balancing groups into ${maxGroups} even groups...`);
+        await onProgress?.({
+          phase: 'balancing',
+          currentGroups: groups.length,
+          targetGroups: maxGroups
+        });
+
         groups = await balanceGroups(groups, maxGroups, companyContext);
         
         // Update leadToGroup mapping after balancing
@@ -361,6 +400,7 @@ Return a JSON array of objects with this structure:
           for (const leadId of group.leadIds) {
             leadToGroup[leadId] = group.name;
           }
+          await onGroupCreated?.({ name: group.name, description: group.description });
         }
         console.log(`✅ Groups balanced: ${groups.map(g => `${g.name} (${g.leadIds.length})`).join(', ')}`);
       }
@@ -387,6 +427,13 @@ Return a JSON array of objects with this structure:
   for (let i = 0; i < groups.length; i++) {
     const group = groups[i];
     console.log(`  ↳ Generating pitch for "${group.name}" (${i + 1}/${groups.length})...`);
+    await onProgress?.({
+      phase: 'generating_pitch',
+      group: group.name,
+      current: i + 1,
+      total: groups.length
+    });
+
     const pitchPrompt = `You are a world-class B2B sales copywriter. Please follow these instructions:
 - Write a fully polished, highly personalized, and actionable sales pitch that is ready to use as-is.
 - Do NOT include any placeholders, template language, or generic sections.
@@ -409,6 +456,18 @@ Number of Companies in Group: ${group.leadIds.length}`;
       pitch = await generate(pitchPrompt);
     }
     groupPitches[group.name] = pitch.trim();
+
+    // Process and send leads in this group
+    const groupLeads = leadsWithIds.filter(lead => leadToGroup[lead.id!] === group.name);
+    for (const lead of groupLeads) {
+      const processedLead: ProcessedLead = {
+        ...lead,
+        id: lead.id!,
+        groupName: group.name,
+        pitch: groupPitches[group.name] || "",
+      };
+      await onLeadProcessed?.(processedLead);
+    }
   }
   console.log('✅ All pitches generated');
 
