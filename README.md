@@ -58,8 +58,8 @@ ALCHEMYST_BASE_URL=api.openai.com/v1
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/smart-pitch-generator.git
-cd smart-pitch-generator
+git clone https://github.com/Rustix.git/PitchAI.git
+cd PitchAI
 ```
 
 2. Install dependencies:
