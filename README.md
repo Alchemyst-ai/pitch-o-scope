@@ -6,6 +6,10 @@ A Next.js application that uses AI to generate personalized B2B sales pitches fr
 
 Smart Pitch Generator is a tool designed to help sales teams create personalized outreach messages at scale. Upload your leads in CSV format, provide context about your company and offerings, and the application will generate tailored pitches for each lead based on intelligent grouping.
 
+## ScreenShots
+![image](https://github.com/user-attachments/assets/4cfd76a5-ee50-45c9-90e2-30ff0b014af4)
+
+
 ## Features
 
 - **CSV Lead Import**: Upload your lead data in CSV format
@@ -120,7 +124,3 @@ npm run start
 # or
 yarn start
 ```
-
-## License
-
-This project is licensed under the terms of the license included in the repository. 
