@@ -108,21 +108,6 @@ export const FileUploader: React.FC = () => {
         </div>
       </div>
       
-      <div className="flex justify-between items-center">
-        <div className="text-gray-500 text-sm flex items-center">
-          <AlertTriangle className="h-4 w-4 mr-1" />
-          <span>Required columns: Company Name, Website, Job Title, Full Name (or First + Last Name)</span>
-        </div>
-        
-        <button
-          className="flex items-center text-indigo-600 hover:text-indigo-800 transition-colors text-sm font-medium"
-          onClick={downloadTemplate}
-        >
-          <Download className="h-4 w-4 mr-1" />
-          Download Template
-        </button>
-      </div>
-      
       {csvFile && isValidCSV && leads.length > 0 && (
         <div className="mt-4 border rounded-md overflow-hidden">
           <h4 className="bg-gray-100 px-3 py-2 text-sm font-medium">Preview (first 5 leads)</h4>

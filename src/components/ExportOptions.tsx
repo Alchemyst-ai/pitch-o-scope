@@ -3,7 +3,7 @@ import { useAppContext } from '../../app/contexts/AppContext';
 import { FileDown, ClipboardCopy, CheckCircle } from 'lucide-react';
 
 export const ExportOptions: React.FC = () => {
-  const { outputs, csvFile, pitch: companyContext } = useAppContext();
+  const { outputs } = useAppContext();
   const [isCopied, setIsCopied] = useState(false);
   
   const exportToCSV = () => {
@@ -20,7 +20,7 @@ export const ExportOptions: React.FC = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'output.csv';
+    a.download = 'generated_pitches.csv';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -28,11 +28,36 @@ export const ExportOptions: React.FC = () => {
   };
   
   const copyAllToClipboard = () => {
-    const messages = outputs.map(output => 
-      `${output.lead.fullName} (${output.lead.companyName}):\n${output.personalizedMessage}\n\n`
-    ).join('');
+    // Group outputs by groupName
+    const groupedOutputs = outputs.reduce((groups: Record<string, typeof outputs>, output) => {
+      const groupName = output.groupName || 'Ungrouped';
+      if (!groups[groupName]) {
+        groups[groupName] = [];
+      }
+      groups[groupName].push(output);
+      return groups;
+    }, {});
     
-    navigator.clipboard.writeText(messages).then(() => {
+    // Format the text to copy
+    let textToCopy = '';
+    Object.entries(groupedOutputs).forEach(([groupName, groupOutputs]) => {
+      textToCopy += `=== ${groupName} ===\n\n`;
+      
+      // Add the pitch (assuming all leads in a group have the same pitch)
+      if (groupOutputs[0]?.pitch) {
+        textToCopy += `${groupOutputs[0].pitch}\n\n`;
+      }
+      
+      // Add the leads in this group
+      textToCopy += `Leads in this group:\n`;
+      groupOutputs.forEach(output => {
+        textToCopy += `- ${output.fullName} (${output.companyName})\n`;
+      });
+      
+      textToCopy += '\n\n';
+    });
+    
+    navigator.clipboard.writeText(textToCopy).then(() => {
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 2000);
     });

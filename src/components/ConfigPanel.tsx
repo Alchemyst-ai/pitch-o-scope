@@ -9,11 +9,15 @@ export const ConfigPanel: React.FC = () => {
     isGroupingEnabled,
     setIsGroupingEnabled,
     numberOfGroups,
-    setNumberOfGroups
+    setNumberOfGroups,
+    predefinedGroups,
+    setPredefinedGroups
   } = useAppContext();
 
   // Calculate max number of groups based on leads
   const maxGroups = Math.max(10, leads.length);
+  // Minimum number of groups is 1
+  const minGroups = 1;
 
   return (
     <div className="space-y-4">
@@ -57,22 +61,41 @@ export const ConfigPanel: React.FC = () => {
       </div>
 
       {isGroupingEnabled && (
-        <div>
-          <label htmlFor="numberOfGroups" className="block text-sm font-medium text-gray-700 mb-1">
-            Number of Groups: {numberOfGroups}
-          </label>
-          <input
-            id="numberOfGroups"
-            type="range"
-            min={10}
-            max={maxGroups}
-            value={numberOfGroups}
-            onChange={(e) => setNumberOfGroups(parseInt(e.target.value, 10))}
-            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-          />
-          <p className="mt-1 text-sm text-gray-500">
-            Adjust the number of groups to organize your leads (min: 10, max: {maxGroups})
-          </p>
+        <div className="space-y-4">
+          <div>
+            <label htmlFor="numberOfGroups" className="block text-sm font-medium text-gray-700 mb-1">
+              Number of Groups: {numberOfGroups}
+            </label>
+            <input
+              id="numberOfGroups"
+              type="range"
+              min={minGroups}
+              max={maxGroups}
+              value={numberOfGroups}
+              onChange={(e) => setNumberOfGroups(parseInt(e.target.value, 10))}
+              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+            />
+            <p className="mt-1 text-sm text-gray-500">
+              Adjust the number of groups to organize your leads (min: {minGroups}, max: {maxGroups})
+            </p>
+          </div>
+
+          <div>
+            <label htmlFor="predefinedGroups" className="block text-sm font-medium text-gray-700 mb-1">
+              Predefined Groups (comma-separated)
+            </label>
+            <input
+              id="predefinedGroups"
+              type="text"
+              value={predefinedGroups}
+              onChange={(e) => setPredefinedGroups(e.target.value)}
+              placeholder="e.g., Aerospace, Agriculture, Retail"
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            />
+            <p className="mt-1 text-sm text-gray-500">
+              Leave empty to let the system create groups automatically
+            </p>
+          </div>
         </div>
       )}
     </div>

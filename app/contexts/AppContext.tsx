@@ -21,6 +21,8 @@ interface AppContextType {
   setIsGroupingEnabled: React.Dispatch<React.SetStateAction<boolean>>;
   numberOfGroups: number;
   setNumberOfGroups: React.Dispatch<React.SetStateAction<number>>;
+  predefinedGroups: string;
+  setPredefinedGroups: React.Dispatch<React.SetStateAction<string>>;
   isGenerating: boolean;
   setIsGenerating: React.Dispatch<React.SetStateAction<boolean>>;
   progress: number;
@@ -46,7 +48,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [pitch, setPitch] = useState<string>('');
   const [outputType, setOutputType] = useState<OutputType[]>([OutputType.EMAIL]);
   const [isGroupingEnabled, setIsGroupingEnabled] = useState<boolean>(false);
-  const [numberOfGroups, setNumberOfGroups] = useState<number>(10);
+  const [numberOfGroups, setNumberOfGroups] = useState<number>(3);
+  const [predefinedGroups, setPredefinedGroups] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [progress, setProgress] = useState<number>(0);
   const [outputs, setOutputs] = useState<PitchOutput[]>([]);
@@ -94,6 +97,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setIsGroupingEnabled,
       numberOfGroups,
       setNumberOfGroups,
+      predefinedGroups,
+      setPredefinedGroups,
       isGenerating,
       setIsGenerating,
       progress,
