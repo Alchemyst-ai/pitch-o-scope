@@ -12,6 +12,9 @@ export const parseCSV = async (file: File): Promise<CSVRow[]> => {
       columns: true,
       skip_empty_lines: true,
       trim: true,
+      relax_quotes: true, // Allow quotes to be escaped
+      relax_column_count: true, // Handle varying number of columns
+      escape: '"', // Use double quotes for escaping
     });
     return records as CSVRow[];
   }
@@ -24,16 +27,23 @@ export const parseCSV = async (file: File): Promise<CSVRow[]> => {
       try {
         const text = event.target?.result as string;
         // Use PapaParse to handle quoted values and commas
-        const result = Papa.parse<CSVRow>(text, {
+        Papa.parse<CSVRow>(text, {
           header: true,
           skipEmptyLines: true,
           dynamicTyping: false,
+          escapeChar: '"', // Use double quotes for escaping
+          quoteChar: '"', // Use double quotes as quote character
+          complete: (results) => {
+            if (results.errors && results.errors.length > 0) {
+              reject(new Error('Failed to parse CSV file: ' + results.errors.map((e: Papa.ParseError) => e.message).join('; ')));
+            } else {
+              resolve(results.data);
+            }
+          },
+          error: (error: Error) => {
+            reject(new Error('Failed to parse CSV file: ' + error.message));
+          }
         });
-        if (result.errors && result.errors.length > 0) {
-          reject(new Error('Failed to parse CSV file: ' + result.errors.map((e: Papa.ParseError) => e.message).join('; ')));
-        } else {
-          resolve(result.data);
-        }
       } catch (error) {
         reject(new Error('Failed to parse CSV file'));
       }
@@ -60,11 +70,15 @@ export const convertJsonToCSV = (jsonData: any[]): string => {
   const dataRows = jsonData.map(obj => {
     return headers.map(header => {
       const value = obj[header];
-      // Handle values that contain commas by wrapping in quotes
-      if (typeof value === 'string' && value.includes(',')) {
-        return `"${value}"`;
+      // Handle values that contain commas, quotes, or newlines by wrapping in quotes and escaping quotes
+      if (typeof value === 'string') {
+        // Replace any quotes with double quotes (CSV escaping)
+        const escapedValue = value.replace(/"/g, '""');
+        // Always wrap in quotes to handle newlines and commas
+        return `"${escapedValue}"`;
       }
-      return `"${value}"`;
+      // For non-string values, convert to string and wrap in quotes
+      return `"${String(value)}"`;
     }).join(',');
   });
   
