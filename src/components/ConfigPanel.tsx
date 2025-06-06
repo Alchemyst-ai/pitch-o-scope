@@ -50,7 +50,7 @@ export const ConfigPanel: React.FC = () => {
           role="switch"
           aria-checked={isGroupingEnabled}
         >
-          <span className="sr-only">Enable grouping</span>
+          <span className="sr-only">{"Advanced Grouping (Default is 3 Groups)"}</span>
           <span
             aria-hidden="true"
             className={`${

@@ -73,12 +73,12 @@ export const convertJsonToCSV = (jsonData: any[]): string => {
       // Handle values that contain commas, quotes, or newlines by wrapping in quotes and escaping quotes
       if (typeof value === 'string') {
         // Replace any quotes with double quotes (CSV escaping)
-        const escapedValue = value.replace(/"/g, '""');
+        const escapedValue = value.replaceAll('\\', '\\\\').replaceAll('"', '\\"').replaceAll('\n', '\\n').replaceAll(',', '\\,').replaceAll(`'`, `\\'`).replaceAll('`', '\\`');
         // Always wrap in quotes to handle newlines and commas
-        return `"${escapedValue}"`;
+        return `\"${escapedValue}\"`;
       }
       // For non-string values, convert to string and wrap in quotes
-      return `"${String(value)}"`;
+      return `\"${String(value)}\"`;
     }).join(',');
   });
   

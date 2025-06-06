@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAppContext } from '../../app/contexts/AppContext';
 import { Sparkles, Loader, Download } from 'lucide-react';
+import { parseUntilJson } from '../functions/utils/parseUntilJson';
 
 interface ProgressState {
   phase: 'idle' | 'starting' | 'classifying' | 'balancing' | 'generating_pitch' | 'complete';
@@ -79,7 +80,7 @@ export const GenerateButton: React.FC = () => {
 
         for (const update of updates) {
           try {
-            const { type, data } = JSON.parse(update);
+            const { type, data } = parseUntilJson(update);
             
             switch (type) {
               case 'start':
