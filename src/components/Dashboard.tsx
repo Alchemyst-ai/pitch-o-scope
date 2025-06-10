@@ -6,6 +6,7 @@ import { LeadTable } from './LeadTable';
 import { GenerateButton } from './GenerateButton';
 import { OutputTable } from './OutputTable';
 import { ExportOptions } from './ExportOptions';
+import { CSVRenderer } from './CSVRenderer';
 
 export const Dashboard: React.FC = () => {
   const { leads, outputs, isValidCSV, isGenerating, csvFile } = useAppContext();
@@ -29,13 +30,13 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
         
-        {leads.length > 0 && (
+        {csvFile && (
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
             <div className="bg-indigo-500 py-3 px-4">
-              <h3 className="text-white font-semibold">2. Lead Preview</h3>
+              <h3 className="text-white font-semibold">2. Raw CSV Data</h3>
             </div>
             <div className="p-4">
-              <LeadTable />
+              <CSVRenderer />
             </div>
           </div>
         )}
@@ -43,7 +44,7 @@ export const Dashboard: React.FC = () => {
         {csvFile && (
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
             <div className="bg-indigo-500 py-3 px-4">
-              <h3 className="text-white font-semibold">3. Configure Your Pitch</h3>
+              <h3 className="text-white font-semibold">4. Configure Your Pitch</h3>
             </div>
             <div className="p-4">
               <ConfigPanel />
@@ -54,7 +55,7 @@ export const Dashboard: React.FC = () => {
         {isValidCSV && (
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
             <div className="bg-indigo-500 py-3 px-4">
-              <h3 className="text-white font-semibold">4. Generate Pitches</h3>
+              <h3 className="text-white font-semibold">5. Generate Pitches</h3>
             </div>
             <div className="p-4">
               <GenerateButton />
@@ -65,7 +66,7 @@ export const Dashboard: React.FC = () => {
         {(outputs.length > 0 || isGenerating) && (
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
             <div className="bg-indigo-500 py-3 px-4">
-              <h3 className="text-white font-semibold">5. Results</h3>
+              <h3 className="text-white font-semibold">6. Results</h3>
             </div>
             <div className="p-4">
               <OutputTable />

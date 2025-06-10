@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useMemo } from 'react';
 import { useAppContext } from '../../app/contexts/AppContext';
 import { Upload, FileWarning, CheckCircle, AlertTriangle, Download } from 'lucide-react';
 import { getTemplateCSV } from '../utils/csvUtils';
@@ -14,6 +14,19 @@ export const FileUploader: React.FC = () => {
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
+  
+  // Get the first few columns from the leads data
+  const previewColumns = useMemo(() => {
+    if (leads.length === 0) return [];
+    
+    // Get all properties from the first lead object (excluding internal fields)
+    const firstLead = leads[0];
+    const columns = Object.keys(firstLead)
+      .filter(key => key !== 'id' && key !== 'keywords');
+    
+    // Return only the first 3 columns (or fewer if there are less)
+    return columns.slice(0, 3);
+  }, [leads]);
   
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -108,24 +121,28 @@ export const FileUploader: React.FC = () => {
         </div>
       </div>
       
-      {csvFile && isValidCSV && leads.length > 0 && (
+      {/* {csvFile && isValidCSV && leads.length > 0 && (
         <div className="mt-4 border rounded-md overflow-hidden">
           <h4 className="bg-gray-100 px-3 py-2 text-sm font-medium">Preview (first 5 leads)</h4>
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Job Title</th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Company</th>
+                  {previewColumns.map(column => (
+                    <th key={column} className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {column}
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {leads.slice(0, 5).map((lead) => (
                   <tr key={lead.id}>
-                    <td className="px-3 py-2 text-sm text-gray-800">{lead.fullName}</td>
-                    <td className="px-3 py-2 text-sm text-gray-600">{lead.jobTitle}</td>
-                    <td className="px-3 py-2 text-sm text-gray-600">{lead.companyName}</td>
+                    {previewColumns.map(column => (
+                      <td key={`${lead.id}-${column}`} className="px-3 py-2 text-sm text-gray-600">
+                        {(lead as any)[column] || ''}
+                      </td>
+                    ))}
                   </tr>
                 ))}
               </tbody>
@@ -135,7 +152,7 @@ export const FileUploader: React.FC = () => {
             Showing 5 of {leads.length} leads
           </div>
         </div>
-      )}
+      )} */}
     </div>
   );
 };

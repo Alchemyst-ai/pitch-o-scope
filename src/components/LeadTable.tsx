@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useAppContext } from '../../app/contexts/AppContext';
 import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import { Lead } from '../types';
 
 export const LeadTable: React.FC = () => {
   const { leads } = useAppContext();
@@ -8,12 +9,32 @@ export const LeadTable: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const leadsPerPage = 10;
   
+  // Get the raw column headers directly from the lead objects
+  const columns = useMemo(() => {
+    if (leads.length === 0) return [];
+    
+    // Extract all keys from the leads and use them directly as columns
+    const allKeys = new Set<string>();
+    leads.forEach(lead => {
+      Object.keys(lead).forEach(key => {
+        if (key !== 'id' && key !== 'keywords') { // Skip internal fields
+          allKeys.add(key);
+        }
+      });
+    });
+    
+    return Array.from(allKeys);
+  }, [leads]);
+  
   // Filter leads based on search term
-  const filteredLeads = leads.filter(lead => 
-    lead.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    lead.companyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    lead.jobTitle.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredLeads = leads.filter(lead => {
+    const searchLower = searchTerm.toLowerCase();
+    return Object.values(lead).some(
+      value => 
+        typeof value === 'string' && 
+        value.toLowerCase().includes(searchLower)
+    );
+  });
   
   // Calculate pagination
   const indexOfLastLead = currentPage * leadsPerPage;
@@ -57,46 +78,33 @@ export const LeadTable: React.FC = () => {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Job Title</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Company</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Website</th>
-              {leads.some(lead => lead.industry) && (
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Industry</th>
-              )}
-              {leads.some(lead => lead.location) && (
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
-              )}
+              {columns.map(column => (
+                <th 
+                  key={column}
+                  className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  {column}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {currentLeads.length > 0 ? (
               currentLeads.map((lead) => (
                 <tr key={lead.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 text-sm text-gray-900">{lead.fullName}</td>
-                  <td className="px-4 py-3 text-sm text-gray-500">{lead.jobTitle}</td>
-                  <td className="px-4 py-3 text-sm text-gray-500">{lead.companyName}</td>
-                  <td className="px-4 py-3 text-sm text-gray-500 truncate max-w-[200px]">
-                    <a 
-                      href={lead.website.startsWith('http') ? lead.website : `https://${lead.website}`} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-indigo-600 hover:text-indigo-800 hover:underline"
+                  {columns.map(column => (
+                    <td 
+                      key={`${lead.id}-${column}`} 
+                      className="px-4 py-3 text-sm text-gray-500 truncate max-w-[200px]"
                     >
-                      {lead.website}
-                    </a>
-                  </td>
-                  {leads.some(lead => lead.industry) && (
-                    <td className="px-4 py-3 text-sm text-gray-500">{lead.industry}</td>
-                  )}
-                  {leads.some(lead => lead.location) && (
-                    <td className="px-4 py-3 text-sm text-gray-500">{lead.location}</td>
-                  )}
+                      {renderCellContent(column, (lead as any)[column])}
+                    </td>
+                  ))}
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={6} className="px-4 py-6 text-center text-gray-500">
+                <td colSpan={columns.length} className="px-4 py-6 text-center text-gray-500">
                   {searchTerm ? 'No leads match your search criteria.' : 'No leads available.'}
                 </td>
               </tr>
@@ -149,3 +157,29 @@ export const LeadTable: React.FC = () => {
     </div>
   );
 };
+
+// Helper function to render cell content based on value type
+function renderCellContent(key: string, value: any): React.ReactNode {
+  if (value === undefined || value === null) {
+    return '';
+  }
+  
+  if (key === 'website' && value) {
+    return (
+      <a 
+        href={value.startsWith('http') ? value : `https://${value}`} 
+        target="_blank" 
+        rel="noopener noreferrer"
+        className="text-indigo-600 hover:text-indigo-800 hover:underline"
+      >
+        {value}
+      </a>
+    );
+  }
+  
+  if (Array.isArray(value)) {
+    return value.join(', ');
+  }
+  
+  return value;
+}
