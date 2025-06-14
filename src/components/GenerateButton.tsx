@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useAppContext } from '../../app/contexts/AppContext';
 import { Sparkles, Loader, Download } from 'lucide-react';
 import { parseUntilJson } from '../functions/utils/parseUntilJson';
+import { Button } from '../../app/components/ui';
+import { theme } from '../../app/utils/theme';
 
 interface ProgressState {
   phase: 'idle' | 'starting' | 'classifying' | 'balancing' | 'generating_pitch' | 'complete';
@@ -203,19 +205,13 @@ export const GenerateButton: React.FC = () => {
 
   return (
     <div className="text-center space-y-4">
-      <button
+      <Button
         onClick={handleGenerate}
         disabled={!canGenerate || isGenerating}
+        fullWidth
         className={`
-          flex items-center justify-center px-6 py-3 rounded-md text-white font-medium text-lg
-          transition-colors
-          ${
-            !canGenerate
-              ? 'bg-gray-400 cursor-not-allowed'
-              : isGenerating
-                ? 'bg-indigo-600 cursor-wait'
-                : 'bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2'
-          }
+          flex items-center justify-center py-3 text-lg
+          ${!canGenerate ? 'opacity-50 cursor-not-allowed' : ''}
         `}
       >
         {isGenerating ? (
@@ -229,20 +225,20 @@ export const GenerateButton: React.FC = () => {
             Generate Personalized Pitches
           </>
         )}
-      </button>
+      </Button>
 
       {isGenerating && (
-        <div className="mt-6 p-4 bg-white rounded-lg shadow">
+        <div className={`mt-6 p-4 ${theme.glassCard} rounded-lg`}>
           <div className="flex items-center space-x-2 mb-2">
-            <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-500 border-t-transparent" />
-            <h3 className="font-medium">{progress.message}</h3>
+            <div className="animate-spin rounded-full h-4 w-4 border-2 border-orange-500 border-t-transparent" />
+            <h3 className="font-medium text-white">{progress.message}</h3>
           </div>
           {progress.detail && (
-            <p className="text-sm text-gray-600 mb-2">{progress.detail}</p>
+            <p className="text-sm text-gray-300 mb-2">{progress.detail}</p>
           )}
-          <div className="w-full bg-gray-200 rounded-full h-2.5 mb-4">
+          <div className="w-full bg-gray-800/50 rounded-full h-2.5 mb-4">
             <div 
-              className="bg-blue-600 h-2.5 rounded-full transition-all duration-500"
+              className="bg-gradient-to-r from-[#dbb13d] to-[#f04848] h-2.5 rounded-full transition-all duration-500"
               style={{ width: `${getProgressPercentage()}%` }}
             />
           </div>

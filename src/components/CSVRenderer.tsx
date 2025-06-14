@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../../app/contexts/AppContext';
 import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import { theme, combineClasses } from '../../app/utils/theme';
 
 export const CSVRenderer: React.FC = () => {
   const { csvFile } = useAppContext();
@@ -114,7 +115,7 @@ export const CSVRenderer: React.FC = () => {
   };
 
   if (!csvFile || headers.length === 0) {
-    return <div className="text-center py-4 text-gray-500">No CSV file uploaded</div>;
+    return <div className="text-center py-4 text-gray-300">No CSV file uploaded</div>;
   }
 
   return (
@@ -122,11 +123,15 @@ export const CSVRenderer: React.FC = () => {
       <div className="flex items-center">
         <div className="relative flex-grow">
           <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-            <Search className="w-4 h-4 text-gray-500" />
+            <Search className="w-4 h-4 text-gray-300" />
           </div>
           <input
             type="text"
-            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            className={combineClasses(
+              theme.glassInput,
+              theme.glassBorder,
+              "block w-full pl-10 pr-3 py-2 rounded-md leading-5 text-white placeholder-gray-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
+            )}
             placeholder="Search CSV data..."
             value={searchTerm}
             onChange={(e) => {
@@ -137,28 +142,28 @@ export const CSVRenderer: React.FC = () => {
         </div>
       </div>
       
-      <div className="overflow-x-auto border rounded-md">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+      <div className="overflow-x-auto border border-zinc-700 rounded-md">
+        <table className="min-w-full divide-y divide-zinc-700">
+          <thead className="bg-zinc-900">
             <tr>
               {headers.map((header, index) => (
                 <th 
                   key={index}
-                  className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"
                 >
                   {header}
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-zinc-800/50 divide-y divide-zinc-700">
             {currentRows.length > 0 ? (
               currentRows.map((row, rowIndex) => (
-                <tr key={rowIndex} className="hover:bg-gray-50">
+                <tr key={rowIndex} className="hover:bg-zinc-700/50">
                   {headers.map((header, colIndex) => (
                     <td 
                       key={`${rowIndex}-${colIndex}`} 
-                      className="px-4 py-3 text-sm text-gray-500 truncate max-w-[200px]"
+                      className="px-4 py-3 text-sm text-gray-200 truncate max-w-[200px]"
                     >
                       {row[header] || ''}
                     </td>
@@ -167,7 +172,7 @@ export const CSVRenderer: React.FC = () => {
               ))
             ) : (
               <tr>
-                <td colSpan={headers.length} className="px-4 py-6 text-center text-gray-500">
+                <td colSpan={headers.length} className="px-4 py-6 text-center text-gray-300">
                   {searchTerm ? 'No data matches your search criteria.' : 'No data available.'}
                 </td>
               </tr>
@@ -178,7 +183,7 @@ export const CSVRenderer: React.FC = () => {
       
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
-          <div className="text-sm text-gray-700">
+          <div className="text-sm text-gray-300">
             Showing <span className="font-medium">{indexOfFirstRow + 1}</span> to{' '}
             <span className="font-medium">
               {indexOfLastRow > filteredData.length ? filteredData.length : indexOfLastRow}
@@ -192,14 +197,14 @@ export const CSVRenderer: React.FC = () => {
               disabled={currentPage === 1}
               className={`p-2 rounded-md ${
                 currentPage === 1
-                  ? 'text-gray-400 cursor-not-allowed'
-                  : 'text-gray-700 hover:bg-gray-100'
+                  ? 'text-gray-500 cursor-not-allowed'
+                  : 'text-gray-300 hover:bg-zinc-700'
               }`}
             >
               <ChevronLeft className="h-5 w-5" />
             </button>
             
-            <span className="text-sm text-gray-700">
+            <span className="text-sm text-gray-300">
               Page {currentPage} of {totalPages}
             </span>
             
@@ -208,8 +213,8 @@ export const CSVRenderer: React.FC = () => {
               disabled={currentPage === totalPages}
               className={`p-2 rounded-md ${
                 currentPage === totalPages
-                  ? 'text-gray-400 cursor-not-allowed'
-                  : 'text-gray-700 hover:bg-gray-100'
+                  ? 'text-gray-500 cursor-not-allowed'
+                  : 'text-gray-300 hover:bg-zinc-700'
               }`}
             >
               <ChevronRight className="h-5 w-5" />
