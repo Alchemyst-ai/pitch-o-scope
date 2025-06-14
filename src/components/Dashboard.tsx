@@ -24,11 +24,8 @@ export const Dashboard: React.FC = () => {
       
       <div className="space-y-6">
         <Card>
-          <div className={combineClasses(
-            theme.buttonGradient,
-            'py-3 px-4 rounded-t-xl -mt-6 -mx-6 mb-4'
-          )}>
-            <h3 className="text-white font-semibold">1. Upload Leads CSV</h3>
+          <div className="bg-[#1e1e1e] py-3 px-4 rounded-t-xl -mt-6 -mx-6 mb-4">
+            <h3 className="text-[#EAEAEA] font-semibold">1. Upload Leads CSV</h3>
           </div>
           <div className="p-4">
             <FileUploader />
@@ -37,11 +34,8 @@ export const Dashboard: React.FC = () => {
         
         {csvFile && (
           <Card>
-            <div className={combineClasses(
-              theme.buttonGradient,
-              'py-3 px-4 rounded-t-xl -mt-6 -mx-6 mb-4'
-            )}>
-              <h3 className="text-white font-semibold">2. Raw CSV Data</h3>
+            <div className="bg-[#1e1e1e] py-3 px-4 rounded-t-xl -mt-6 -mx-6 mb-4">
+              <h3 className="text-[#EAEAEA] font-semibold">2. Raw CSV Data</h3>
             </div>
             <div className="p-4">
               <CSVRenderer />
@@ -51,11 +45,8 @@ export const Dashboard: React.FC = () => {
         
         {csvFile && (
           <Card>
-            <div className={combineClasses(
-              theme.buttonGradient,
-              'py-3 px-4 rounded-t-xl -mt-6 -mx-6 mb-4'
-            )}>
-              <h3 className="text-white font-semibold">4. Configure Your Pitch</h3>
+            <div className="bg-[#1e1e1e] py-3 px-4 rounded-t-xl -mt-6 -mx-6 mb-4">
+              <h3 className="text-[#EAEAEA] font-semibold">4. Configure Your Pitch</h3>
             </div>
             <div className="p-4">
               <ConfigPanel />
@@ -65,11 +56,8 @@ export const Dashboard: React.FC = () => {
         
         {isValidCSV && (
           <Card>
-            <div className={combineClasses(
-              theme.buttonGradient,
-              'py-3 px-4 rounded-t-xl -mt-6 -mx-6 mb-4'
-            )}>
-              <h3 className="text-white font-semibold">5. Generate Pitches</h3>
+            <div className="bg-[#1e1e1e] py-3 px-4 rounded-t-xl -mt-6 -mx-6 mb-4">
+              <h3 className="text-[#EAEAEA] font-semibold">5. Generate Pitches</h3>
             </div>
             <div className="p-4">
               <GenerateButton />
@@ -79,19 +67,11 @@ export const Dashboard: React.FC = () => {
         
         {(outputs.length > 0 || isGenerating) && (
           <Card>
-            <div className={combineClasses(
-              theme.buttonGradient,
-              'py-3 px-4 rounded-t-xl -mt-6 -mx-6 mb-4'
-            )}>
-              <h3 className="text-white font-semibold">6. Results</h3>
+            <div className="bg-[#1e1e1e] py-3 px-4 rounded-t-xl -mt-6 -mx-6 mb-4">
+              <h3 className="text-[#EAEAEA] font-semibold">6. Results</h3>
             </div>
             <div className="p-4">
               <OutputTable />
-              {outputs.length > 0 && !isGenerating && (
-                <div className="mt-6 flex justify-center">
-                  <ExportOptions />
-                </div>
-              )}
             </div>
           </Card>
         )}

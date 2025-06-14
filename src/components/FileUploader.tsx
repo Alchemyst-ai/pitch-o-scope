@@ -74,7 +74,7 @@ export const FileUploader: React.FC = () => {
           isDragging 
             ? 'border-indigo-500 bg-indigo-50' 
             : isValidCSV 
-              ? 'border-green-500 bg-green-50' 
+              ? 'border-green-500 bg-transparent' 
               : csvFile && !isValidCSV 
                 ? 'border-red-500 bg-red-50'
                 : 'border-gray-300 hover:border-indigo-400'
@@ -103,7 +103,9 @@ export const FileUploader: React.FC = () => {
             </>
           ) : isValidCSV ? (
             <>
-              <CheckCircle className="h-12 w-12 text-green-500" />
+              <div className="bg-green-500/10 border border-green-500/20 rounded-full p-2">
+                <CheckCircle className="h-12 w-12 text-green-700" />
+              </div>
               <div>
                 <p className="text-green-700 font-medium">{csvFile.name}</p>
                 <p className="text-green-600 text-sm mt-1">{leads.length} leads loaded successfully</p>

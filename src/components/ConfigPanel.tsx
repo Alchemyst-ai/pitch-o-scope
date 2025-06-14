@@ -22,7 +22,7 @@ export const ConfigPanel: React.FC = () => {
   return (
     <div className="space-y-4">
       <div>
-        <label htmlFor="pitch" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="pitch" className="block text-sm font-medium text-gray-200 mb-1">
           Your Company Context
         </label>
         <textarea
@@ -30,22 +30,22 @@ export const ConfigPanel: React.FC = () => {
           value={pitch}
           onChange={(e) => setPitch(e.target.value)}
           placeholder="Describe your company, products, and unique value proposition..."
-          className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 min-h-[120px] p-4"
+          className="w-full rounded-md border-gray-300 bg-gray-800 text-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 min-h-[120px] p-4"
         />
-        <p className="mt-1 text-sm text-gray-500">
+        <p className="mt-1 text-sm text-gray-400">
           This information will be used to generate personalized pitches for your leads.
         </p>
       </div>
 
       <div className="flex items-center justify-between">
-        <label htmlFor="groupingToggle" className="text-sm font-medium text-gray-700">
+        <label htmlFor="groupingToggle" className="text-sm font-medium text-gray-200">
           Enable Lead Grouping
         </label>
         <button
           type="button"
           onClick={() => setIsGroupingEnabled(!isGroupingEnabled)}
           className={`${
-            isGroupingEnabled ? 'bg-indigo-600' : 'bg-gray-200'
+            isGroupingEnabled ? 'bg-orange-600' : 'bg-gray-200'
           } relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2`}
           role="switch"
           aria-checked={isGroupingEnabled}
@@ -63,7 +63,7 @@ export const ConfigPanel: React.FC = () => {
       {isGroupingEnabled && (
         <div className="space-y-4">
           <div>
-            <label htmlFor="numberOfGroups" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="numberOfGroups" className="block text-sm font-medium text-gray-200 mb-1">
               Number of Groups: {numberOfGroups}
             </label>
             <input
@@ -73,15 +73,15 @@ export const ConfigPanel: React.FC = () => {
               max={maxGroups}
               value={numberOfGroups}
               onChange={(e) => setNumberOfGroups(parseInt(e.target.value, 10))}
-              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+              className="w-full h-2 bg-gray-800  rounded-lg appearance-none cursor-pointer"
             />
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-gray-400">
               Adjust the number of groups to organize your leads (min: {minGroups}, max: {maxGroups})
             </p>
           </div>
 
           <div>
-            <label htmlFor="predefinedGroups" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="predefinedGroups" className="block text-sm font-medium text-gray-200 mb-1">
               Predefined Groups (comma-separated)
             </label>
             <input
@@ -90,9 +90,9 @@ export const ConfigPanel: React.FC = () => {
               value={predefinedGroups}
               onChange={(e) => setPredefinedGroups(e.target.value)}
               placeholder="e.g., Aerospace, Agriculture, Retail"
-              className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              className="w-full h-10 p-2 rounded-md border-gray-300 bg-gray-800 text-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
             />
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-gray-400">
               Leave empty to let the system create groups automatically
             </p>
           </div>

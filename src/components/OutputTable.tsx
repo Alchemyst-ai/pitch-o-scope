@@ -33,25 +33,25 @@ export const OutputTable: React.FC = () => {
     <div>
       {groups.length > 0 && (
         <div>
-          <h2 className="text-xl font-semibold mb-4">Generated Groups</h2>
+          <h2 className="text-xl text-gray-200 font-semibold mb-4">Generated Groups</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {groups.map((group, i) => (
-              <div key={i} className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+              <div key={i} className="bg-[#1e1e1e] p-6 rounded-lg shadow-sm border border-gray-200">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-medium text-gray-900">{group.name}</h3>
-                  <span className="text-sm text-gray-500">
+                  <h3 className="text-lg font-medium text-gray-200">{group.name}</h3>
+                  <span className="text-sm text-gray-200">
                     {group.leads.length} leads
                   </span>
                 </div>
-                <p className="text-gray-600 text-sm mb-4">{group.description}</p>
+                <p className="text-gray-200 text-sm mb-4">{group.description}</p>
                 
                 {/* Show pitch once per group */}
                 {group.leads[0]?.pitch && (
                   <details className="mb-4">
-                    <summary className="text-sm text-blue-600 cursor-pointer hover:text-blue-800 font-medium">
+                    <summary className="text-sm text-gray-300 cursor-pointer hover:text-white font-medium">
                       View Group Pitch
                     </summary>
-                    <div className="mt-2 text-sm text-gray-600 whitespace-pre-wrap bg-gray-50 p-4 rounded-md">
+                    <div className="mt-2 text-sm max-h-[10vh] overflow-y-auto text-gray-200 whitespace-pre-wrap bg-zinc-800/50 p-4 rounded-md border border-zinc-700">
                       {group.leads[0]?.pitch}
                     </div>
                   </details>

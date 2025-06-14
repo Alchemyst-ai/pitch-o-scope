@@ -3,7 +3,7 @@ import { useAppContext } from '../../app/contexts/AppContext';
 import { Sparkles, Loader, Download } from 'lucide-react';
 import { parseUntilJson } from '../functions/utils/parseUntilJson';
 import { Button } from '../../app/components/ui';
-import { theme } from '../../app/utils/theme';
+import { theme, combineClasses } from '../../app/utils/theme';
 
 interface ProgressState {
   phase: 'idle' | 'starting' | 'classifying' | 'balancing' | 'generating_pitch' | 'complete';
@@ -210,7 +210,7 @@ export const GenerateButton: React.FC = () => {
         disabled={!canGenerate || isGenerating}
         fullWidth
         className={`
-          flex items-center justify-center py-3 text-lg
+          flex items-center justify-center py-3 text-lg text-white
           ${!canGenerate ? 'opacity-50 cursor-not-allowed' : ''}
         `}
       >
@@ -250,17 +250,22 @@ export const GenerateButton: React.FC = () => {
           <a
             href={csvUrl}
             download="generated_pitches.csv"
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className={combineClasses(
+              theme.glassCard,
+              theme.glassBorder,
+              theme.hoverEffect,
+              "inline-flex items-center gap-2 px-4 py-2 rounded-md text-white"
+            )}
           >
-            <Download className="h-5 w-5 mr-2" />
+            <Download className="h-5 w-5" />
             Download CSV
           </a>
         </div>
       )}
 
       {error && (
-        <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <div className="flex items-center text-red-600">
+        <div className="mt-6 p-4 bg-red-900/20 border border-red-500/20 rounded-lg">
+          <div className="flex items-center text-red-400">
             <svg className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
             </svg>
