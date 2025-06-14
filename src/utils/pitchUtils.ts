@@ -131,12 +131,12 @@ export const outputsToCSV = (outputs: PitchOutput[]): string => {
   
   const rows = outputs.map(output => {
     return [
-      `"${output.lead.fullName}"`,
-      `"${output.lead.jobTitle}"`,
-      `"${output.lead.companyName}"`,
+      `"${output.lead?.fullName}"`,
+      `"${output.lead?.jobTitle}"`,
+      `"${output.lead?.companyName}"`,
       `"${output.outputType}"`,
-      `"${output.pitchAngle.replace(/"/g, '""')}"`,
-      `"${output.personalizedMessage.replace(/"/g, '""')}"`
+      `"${output.pitchAngle?.replace(/"/g, '""')}"`,
+      `"${output.personalizedMessage?.replace(/"/g, '""')}"`
     ].join(',');
   });
   

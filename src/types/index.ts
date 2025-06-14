@@ -48,11 +48,11 @@ export interface LeadData {
 
 export interface PitchOutput {
   id: string;
-  fullName: string;
-  jobTitle: string;
-  companyName: string;
-  groupName: string;
-  pitch: string;
+  fullName?: string;
+  jobTitle?: string;
+  companyName?: string;
+  groupName?: string;
+  pitch?: string;
   // Keep these for backward compatibility
   lead?: Lead;
   pitchAngle?: string;
