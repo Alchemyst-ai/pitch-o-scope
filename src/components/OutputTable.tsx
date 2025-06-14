@@ -48,10 +48,10 @@ export const OutputTable: React.FC = () => {
                 {/* Show pitch once per group */}
                 {group.leads[0]?.pitch && (
                   <details className="mb-4">
-                    <summary className="text-sm text-gray-300 cursor-pointer hover:text-white font-medium">
+                    <summary className="text-sm cursor-pointer text-orange-500 hover:text-orange-600 font-medium">
                       View Group Pitch
                     </summary>
-                    <div className="mt-2 text-sm max-h-[10vh] overflow-y-auto text-gray-200 whitespace-pre-wrap bg-zinc-800/50 p-4 rounded-md border border-zinc-700">
+                    <div className="mt-2 text-sm max-h-[30vh] overflow-y-auto text-gray-200 whitespace-pre-wrap bg-gray-800 p-4 rounded-md border border-zinc-700">
                       {group.leads[0]?.pitch}
                     </div>
                   </details>
