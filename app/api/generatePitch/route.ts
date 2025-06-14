@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { convertJsonToCSV, parseCSV } from "@/src/utils/csvUtils";
 import { processLeadsPipeline } from "@/src/functions/pipeline";
-export const maxDuration = 900;
+export const maxDuration = 600;
 export async function POST(request: NextRequest) {
   const encoder = new TextEncoder();
   const stream = new TransformStream();
