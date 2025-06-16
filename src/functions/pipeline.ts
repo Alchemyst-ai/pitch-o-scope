@@ -763,7 +763,7 @@ Number of Companies in Group: ${group.leadIds.length}`;
 
 
 async function getOrganicResults(query: string): Promise<any[]> {
-  const apiKey = process.env.SERPAPI_API_KEY || "e2892519f8727b6a2ab3c9f5f8758374170590b415f2bdeab405a41ec325f4aa";
+  const apiKey = process.env.SERPAPI_API_KEY;
   if (!apiKey) {
     console.error("SERPAPI_API_KEY environment variable is not set");
     return [];
