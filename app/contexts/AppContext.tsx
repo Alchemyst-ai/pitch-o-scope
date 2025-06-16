@@ -23,6 +23,8 @@ interface AppContextType {
   setNumberOfGroups: React.Dispatch<React.SetStateAction<number>>;
   predefinedGroups: string;
   setPredefinedGroups: React.Dispatch<React.SetStateAction<string>>;
+  scoreLeads: boolean;
+  setScoreLeads: React.Dispatch<React.SetStateAction<boolean>>;
   isGenerating: boolean;
   setIsGenerating: React.Dispatch<React.SetStateAction<boolean>>;
   progress: number;
@@ -50,6 +52,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [isGroupingEnabled, setIsGroupingEnabled] = useState<boolean>(false);
   const [numberOfGroups, setNumberOfGroups] = useState<number>(3);
   const [predefinedGroups, setPredefinedGroups] = useState<string>('');
+  const [scoreLeads, setScoreLeads] = useState<boolean>(false);
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [progress, setProgress] = useState<number>(0);
   const [outputs, setOutputs] = useState<PitchOutput[]>([]);
@@ -99,6 +102,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setNumberOfGroups,
       predefinedGroups,
       setPredefinedGroups,
+      scoreLeads,
+      setScoreLeads,
       isGenerating,
       setIsGenerating,
       progress,

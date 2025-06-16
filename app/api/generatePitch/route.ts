@@ -25,6 +25,7 @@ export async function POST(request: NextRequest) {
       const companyContext = formData.get('companyContext') as string;
       const maxGroups = Number(formData.get('maxGroups')) || 3;
       const predefinedGroupsStr = formData.get('predefinedGroups') as string;
+      const scoreLeads = formData.get('scoreLeads') as string;
       const predefinedGroups = predefinedGroupsStr?.trim() 
         ? predefinedGroupsStr.split(',').map(g => g.trim()).filter(Boolean)
         : undefined;
@@ -40,7 +41,8 @@ export async function POST(request: NextRequest) {
       await sendUpdate('start', {
         totalLeads: csvData.length,
         maxGroups,
-        predefinedGroups
+        predefinedGroups,
+        scoreLeads
       });
 
       // Process leads with progress callback
@@ -49,6 +51,7 @@ export async function POST(request: NextRequest) {
         companyContext,
         maxGroups,
         predefinedGroups,
+        scoreLeads: scoreLeads === 'true',
         onProgress: async (update: any) => {
           await sendUpdate('progress', update);
         },

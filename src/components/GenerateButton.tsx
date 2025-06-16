@@ -26,7 +26,8 @@ export const GenerateButton: React.FC = () => {
     csvFile,
     isGroupingEnabled,
     numberOfGroups,
-    predefinedGroups
+    predefinedGroups,
+    scoreLeads
   } = useAppContext();
   
   const [progress, setProgress] = useState<ProgressState>({ phase: 'idle', message: '' });
@@ -52,7 +53,7 @@ export const GenerateButton: React.FC = () => {
       const formData = new FormData();
       formData.append('file', csvFile as File);
       formData.append('companyContext', companyContext);
-      
+      formData.append('scoreLeads', scoreLeads.toString());
       if (isGroupingEnabled) {
         formData.append('maxGroups', numberOfGroups.toString());
         if (predefinedGroups.trim()) {

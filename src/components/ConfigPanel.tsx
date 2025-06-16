@@ -11,7 +11,9 @@ export const ConfigPanel: React.FC = () => {
     numberOfGroups,
     setNumberOfGroups,
     predefinedGroups,
-    setPredefinedGroups
+    setPredefinedGroups,
+    scoreLeads,
+    setScoreLeads
   } = useAppContext();
 
   // Calculate max number of groups based on leads
@@ -98,6 +100,27 @@ export const ConfigPanel: React.FC = () => {
           </div>
         </div>
       )}
+
+      <div className="flex items-center justify-between">
+        <label htmlFor="scoreLeads" className="text-sm font-medium text-gray-200">
+          Score Leads
+        </label>
+        <button
+          type="button"
+          onClick={() => setScoreLeads(!scoreLeads)}
+          className={`${
+            scoreLeads ? 'bg-orange-600' : 'bg-gray-200'
+          } relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2`}
+        >
+          <span className="sr-only">{"Score Leads"}</span>
+          <span
+            aria-hidden="true"
+            className={`${
+              scoreLeads ? 'translate-x-5' : 'translate-x-0'
+            } pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out`}
+          />
+        </button>
+      </div>
     </div>
   );
 };

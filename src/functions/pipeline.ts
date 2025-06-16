@@ -1,10 +1,14 @@
 import { generate } from "./utils/generate";
 import { v4 as uuidv4 } from "uuid";
 import { parseUntilJson } from "./utils/parseUntilJson";
+import * as cheerio from "cheerio";
+import { summarizeContextJSON } from "./utils/contextSummarizer";
 
 interface Lead {
   [key: string]: any;
   id?: string;
+  relevancyScore?: number;
+  relevancyReason?: string;
 }
 
 interface ProcessedLead extends Lead {
@@ -308,6 +312,7 @@ export async function processLeadsPipeline({
   companyContext,
   maxGroups = 10,
   predefinedGroups,
+  scoreLeads = false,
   onProgress,
   onLeadProcessed,
   onGroupCreated,
@@ -316,6 +321,7 @@ export async function processLeadsPipeline({
   companyContext: string;
   maxGroups?: number;
   predefinedGroups?: string[];
+  scoreLeads?: boolean;
 } & PipelineCallbacks): Promise<Lead[]> {
   try {
     console.log(
@@ -330,6 +336,126 @@ export async function processLeadsPipeline({
     console.log(
       `📦 Split leads into ${batches.length} batches of up to 50 leads each`
     );
+
+    // If scoreLeads is true, process each batch to get relevancy scores first
+    if (scoreLeads) {
+      const t1 = performance.now();
+      console.log("\n📊 Scoring leads based on relevancy...");
+      for (let i = 0; i < batches.length; i++) {
+        const batch = batches[i];
+        console.log(
+          `\n🔍 Scoring batch ${i + 1}/${batches.length} (${batch.length} leads)...`
+        );
+        try {
+          await onProgress?.({
+            phase: "scoring",
+            batch: i + 1,
+            totalBatches: batches.length,
+            batchSize: batch.length,
+          });
+        } catch (e) {
+          console.error("Error in onProgress callback:", e);
+        }
+
+        // Generate search queries for all leads in batch
+        try {
+          console.log("Generating search queries for leads...");
+          const searchQueryPrompt = `Given these leads' information, generate a search query for each lead that will help us find relevant information about their company or business. Focus on their industry, business type, and any specific challenges or needs they might have. If there is a company name present, just use that as the search query. If there is no company name, generate a search query that will help us find relevant information about their business using lead name or other information present.
+
+Leads Information:
+${JSON.stringify(batch, null, 2)}
+
+Return a JSON array of objects with this structure:
+[
+  {
+    "leadId": "the lead's id",
+    "searchQuery": "the search query for this lead"
+  }
+]
+
+# IMPORTANT: THERE SHOULD BE NO TEXT OR BACKTICKS OR ANYTHING ELSE BEFORE OR AFTER THE JSON ARRAY.`;
+          const searchQueriesResponse = await generate(searchQueryPrompt);
+          console.log("Search queries generated");
+          // console.log(searchQueriesResponse);
+          const searchQueries = parseUntilJson(searchQueriesResponse) as Array<{leadId: string, searchQuery: string}>;
+
+          // Get and scrape search results for all leads
+          const leadContexts: Record<string, any> = {};
+          let i = 0;
+          for (const {leadId, searchQuery} of searchQueries) {
+            try {
+              console.log(`Getting context for lead ${leadId} with search query ${searchQuery.trim()} (${i + 1}/${searchQueries.length})`);
+              const results = await getOrganicResults(searchQuery.trim());
+              console.log(`Found ${results.length} results`);
+              console.log(`Scraping top 2 results`);
+              const topKResults = await scrapeTopKResults(results, 2);
+              console.log(`Summarizing context`);
+              leadContexts[leadId] = await summarizeContextJSON(topKResults);
+              console.log(`Context summarized`);
+              console.log(leadContexts[leadId]);
+              i++;
+            } catch (e) {
+              console.error(`Error getting context for lead ${leadId}:`, e);
+              leadContexts[leadId] = [];
+            }
+          }
+
+          console.log("Generating relevancy scores for leads...");
+          // Generate relevancy scores for all leads in batch
+          const scoringPrompt = `Based on our company's context and the leads' information, score how relevant our services are for each lead on a scale of 1-100.
+A score of 100 means the lead is extremely likely to need and benefit from our services, while 1 means there's minimal alignment.
+
+Company Context:
+${companyContext}
+
+Leads Information with Additional Context:
+${batch.map(lead => `
+Lead ID: ${lead.id}
+Lead Data: ${JSON.stringify(lead, null, 2)}
+Additional Context: ${JSON.stringify(leadContexts[lead.id!], null, 2)}
+`).join('\n')}
+
+Return a JSON array of objects with this structure:
+[
+  {
+    "leadId": "the lead's id",
+    "relevancyScore": number between 1 and 100,
+    "relevancyReason": string explaining the score
+  }
+]
+
+Consider for each lead:
+- How well our services align with their needs
+- How likely they are to benefit from our offerings
+- The potential impact we could have on their business
+- Their likelihood to engage and respond
+
+# IMPORTANT: THERE SHOULD BE NO TEXT OR BACKTICKS OR ANYTHING ELSE BEFORE OR AFTER THE JSON ARRAY.`;
+
+          const scoresResponse = await generate(scoringPrompt);
+          const scores = parseUntilJson(scoresResponse) as Array<{leadId: string, relevancyScore: number, relevancyReason: string}>;
+          console.log("Scores generated");
+          console.log(scores);
+          // Apply scores to leads
+          for (const lead of batch) {
+            const scoreObj = scores.find(s => s.leadId === lead.id);
+            lead.relevancyScore = scoreObj ? Math.max(1, Math.min(100, scoreObj.relevancyScore)) : 50;
+            lead.relevancyReason = scoreObj ? scoreObj.relevancyReason : "";
+          }
+        } catch (e) {
+          console.error(`Error processing batch ${i + 1}:`, e);
+          // Set default scores if batch processing fails
+          for (const lead of batch) {
+            lead.relevancyScore = 50;
+            lead.relevancyReason = "";
+          }
+        }
+        console.log(`✅ Batch ${i + 1} scored`);
+      }
+      const t2 = performance.now();
+      console.log(`✅ ${leads.length} leads scored in ${t2 - t1}ms`);
+    }
+
     let groups: Group[] = [];
     let leadToGroup: Record<string, string> = {};
     if (predefinedGroups?.length) {
@@ -612,6 +738,8 @@ Number of Companies in Group: ${group.leadIds.length}`;
         ...lead,
         groupName,
         pitch: groupPitches[groupName] || "",
+        relevancyScore: lead.relevancyScore || undefined,
+        relevancyReason: lead.relevancyReason || undefined,
       };
     });
     console.log("\n✨ Pipeline processing complete!");
@@ -632,3 +760,71 @@ Number of Companies in Group: ${group.leadIds.length}`;
     }));
   }
 }
+
+
+async function getOrganicResults(query: string): Promise<any[]> {
+  const apiKey = process.env.SERPAPI_API_KEY || "e2892519f8727b6a2ab3c9f5f8758374170590b415f2bdeab405a41ec325f4aa";
+  if (!apiKey) {
+    console.error("SERPAPI_API_KEY environment variable is not set");
+    return [];
+  }
+  try {
+    const url = `https://serpapi.com/search?q=${encodeURIComponent(query)}&api_key=${apiKey}`;
+    const response = await fetch(url);
+    if (!response.ok) {
+      console.error(`SerpAPI request failed with status ${response.status}`);
+      return [];
+    }
+    const data = (await response.json()) as { organic_results?: any[] };
+    return Array.isArray(data.organic_results) ? data.organic_results : [];
+  } catch (error) {
+    console.error("Error fetching organic results from SerpAPI:", error);
+    return [];
+  }
+}
+
+async function scrapeTopKResults(
+  organicResults: Array<{ link?: string }>,
+  k: number = 2
+): Promise<string[]> {
+  const resultsToScrape = organicResults.slice(0, k);
+  const cleanedContents: string[] = [];
+
+  for (const result of resultsToScrape) {
+    const link = result.link;
+    if (!link) continue;
+    try {
+      const res = await fetch(link, {
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (compatible; PitchOScopeBot/1.0; +https://example.com/bot)",
+        },
+      });
+      const html = await res.text();
+      const $ = cheerio.load(html);
+      $("script, style, iframe, noscript").remove();
+      const text = $("body").text();
+      const cleaned = text.replace(/\s+/g, " ").trim();
+      if (cleaned) {
+        cleanedContents.push(cleaned);
+      }
+    } catch (error) {
+      console.error(`Failed to scrape ${link}:`, error);
+    }
+  }
+
+  return cleanedContents;
+}
+
+
+
+
+const test = async () => {
+  const results = await getOrganicResults("best sales training");
+  const topKResults = await scrapeTopKResults(results, 2);
+  const summaries = await summarizeContextJSON(topKResults);
+  console.log(summaries);
+}
+
+// Uncomment to test web scraping and summarization
+// test();
